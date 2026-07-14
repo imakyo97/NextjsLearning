@@ -1,0 +1,189 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "_comment": "Lattice System Settings Template for Claude Code",
+  "_version": "1.0.0",
+
+  "hooks": {
+    "_description": "Claude Code hook configurations",
+
+    "session": {
+      "onStart": {
+        "enabled": true,
+        "script": "~/.claude/hooks/session-start.js",
+        "description": "Report stats and load relevant context at session start"
+      },
+      "onEnd": {
+        "enabled": true,
+        "script": "~/.claude/hooks/session-end.js",
+        "description": "Save checkpoint and sync learnings at session end"
+      }
+    },
+
+    "context": {
+      "preCompact": {
+        "enabled": true,
+        "script": "~/.claude/hooks/pre-compact.js",
+        "description": "Preserve critical context before compaction"
+      }
+    },
+
+    "tools": {
+      "observe": {
+        "enabled": true,
+        "script": "~/.claude/hooks/observe.js",
+        "events": ["PreToolUse", "PostToolUse"],
+        "description": "Record tool usage for pattern detection"
+      }
+    },
+
+    "learning": {
+      "pushToDistill": {
+        "enabled": true,
+        "script": "~/.claude/hooks/push-to-distill.js",
+        "description": "Push patterns to distillation queue"
+      }
+    }
+  },
+
+  "mcpServers": {
+    "_description": "MCP server configurations for Claude Desktop",
+
+    "lattice-knowledge": {
+      "command": "node",
+      "args": ["~/.claude/mcp/lattice-knowledge-mcp/dist/index.js"],
+      "env": {
+        "LATTICE_DB_PATH": "~/.claude/knowledge/lattice.db"
+      },
+      "description": "Lattice knowledge management - patterns, decisions, escalations"
+    }
+  },
+
+  "skillRouter": {
+    "_description": "Skill routing configuration",
+    "configPath": "~/.claude/skill-router.yaml",
+    "enabled": true,
+    "autoLoad": true
+  },
+
+  "knowledge": {
+    "_description": "Knowledge base configuration",
+    "indexPath": "~/.claude/knowledge/index.yaml",
+    "autoLoad": {
+      "always": [
+        "policies/escalation-rules.md"
+      ],
+      "byPhase": true,
+      "byFilePattern": true,
+      "byKeyword": true
+    }
+  },
+
+  "checkpoints": {
+    "_description": "Session checkpoint configuration",
+    "enabled": true,
+    "autoSave": {
+      "intervalMinutes": 30,
+      "onPhaseChange": true,
+      "onCompaction": true
+    },
+    "retention": {
+      "maxAge": "30d",
+      "maxCount": 100
+    }
+  },
+
+  "observations": {
+    "_description": "Observation recording configuration",
+    "enabled": true,
+    "file": "~/.claude/homunculus/observations.jsonl",
+    "maxFileSize": "10MB",
+    "rotateOnSize": true,
+    "recordEvents": [
+      "PreToolUse",
+      "PostToolUse",
+      "ToolError"
+    ],
+    "excludeTools": [
+      "Read"
+    ],
+    "sanitize": {
+      "maskSecrets": true,
+      "truncateLargeArgs": true,
+      "maxArgLength": 5000
+    }
+  },
+
+  "distillation": {
+    "_description": "Pattern distillation configuration",
+    "enabled": true,
+    "queue": {
+      "autoProcess": false,
+      "minConfidence": 0.6,
+      "minEvidence": 2
+    },
+    "trigger": {
+      "onSessionEnd": true,
+      "onPatternCount": 10
+    }
+  },
+
+  "phases": {
+    "_description": "Phase management configuration",
+    "configPath": ".claude/phase.yaml",
+    "verification": {
+      "required": true,
+      "levels": {
+        "quick": {
+          "lint": true,
+          "typecheck": false,
+          "tests": false
+        },
+        "standard": {
+          "lint": true,
+          "typecheck": true,
+          "tests": false
+        },
+        "full": {
+          "lint": true,
+          "typecheck": true,
+          "tests": true,
+          "coverage": true
+        }
+      }
+    }
+  },
+
+  "memory": {
+    "_description": "Memory synchronization configuration",
+    "syncToMemoryMd": true,
+    "memoryMdPath": "~/.claude/projects/MEMORY.md",
+    "syncThreshold": {
+      "patternCount": 3,
+      "confidence": 0.8
+    }
+  },
+
+  "logging": {
+    "_description": "Logging configuration",
+    "directory": "~/.claude/logs",
+    "files": {
+      "compaction": "compaction.log",
+      "hooks": "hooks.log",
+      "errors": "errors.log"
+    },
+    "retention": {
+      "maxAge": "7d"
+    }
+  },
+
+  "ui": {
+    "_description": "User interface preferences",
+    "showStats": {
+      "onSessionStart": true,
+      "includePatternCount": true,
+      "includeSkillCount": true,
+      "includePendingEscalations": true
+    },
+    "verbosity": "normal"
+  }
+}

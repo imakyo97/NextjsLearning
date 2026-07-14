@@ -1,0 +1,5 @@
+.claude/settings.local.json
+
+# OpenSpec: interpretations / reviews are not committed (SECURITY-001)
+openspec/changes/*/interpretations/
+openspec/changes/*/reviews/
